@@ -32,8 +32,8 @@
     border: 1px solid color-mix(in srgb, currentColor 12%, transparent);
     transition: border-color 0.2s, transform 0.2s;
   }
-  .card:hover { border-color: var(--avena-gold); transform: translateY(-3px); }
-  .icon { font-size: 2rem; color: var(--avena-gold); }
+  .card:hover { border-color: var(--warm); transform: translateY(-3px); }
+  .icon { font-size: 2rem; color: var(--warm); }
   h3 { margin: 1rem 0 0.4rem; font-size: 1.3rem; }
   p { margin: 0; flex: 1; line-height: 1.6; font-size: 0.95rem; color: color-mix(in srgb, currentColor 70%, transparent); }
   ul { list-style: none; margin: 1.2rem 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.4rem; }
@@ -42,7 +42,7 @@
     border-radius: 999px;
     font-size: 0.75rem;
     font-weight: 600;
-    color: var(--avena-green);
-    background: color-mix(in srgb, var(--avena-green) 12%, transparent);
+    color: var(--brand);
+    background: color-mix(in srgb, var(--brand) 12%, transparent);
   }
 </style>

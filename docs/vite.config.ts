@@ -25,11 +25,11 @@ export default defineConfig({
         sidebar: { '/docs/': sidebar },
         themeColor: {
           light: '#f7f5ee',
-          dark: '#0f1511',
-          primary: '#3f8a52',
-          primaryDeep: '#2a6338',
+          dark: '#0e1415',
+          primary: '#2a7f86',
+          primaryDeep: '#1d5c62',
           hover: '#d9a441',
-          gradient: { start: '#3f8a52', end: '#d9a441' },
+          gradient: { start: '#2a7f86', end: '#d9a441' },
         },
         highlighter: {
           languages: ['bash', 'sh', 'console', 'toml', 'rust', 'ini', 'dockerfile', 'yaml', 'json', 'diff', 'svelte', 'ts', 'js', 'md', 'css', 'text'],

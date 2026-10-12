@@ -1,0 +1,26 @@
+/* ─── avena-net brand ───
+ * Signature: deep teal (the network). Warm metal: Avena gold, because avena-net is part of Avena.
+ * Motif: crossed lattice (the mesh). See src/lib/family/README.md for the family rules. */
+
+:root {
+  --brand: #2a7f86;
+  --brand-deep: #1d5c62;
+  --warm: #d9a441;
+  --warm-ink: #2b1f00;
+  --ink: #142427;
+  --on-ink: #eaf4f4;
+  --on-ink-muted: #a9c4c5;
+  --console-bg: #0c1517;
+  --console-bar: #122124;
+  --console-line: #22393c;
+  --console-text: #c6dcdc;
+  --console-dim: #7a9799;
+  --paper-dark: #0e1415;
+}
+
+/* The mesh motif, reused by the hero and closing panels */
+.motif-mesh {
+  background-image:
+    repeating-linear-gradient(150deg, transparent 0 34px, color-mix(in srgb, var(--brand) 9%, transparent) 34px 35px),
+    repeating-linear-gradient(30deg, transparent 0 34px, color-mix(in srgb, var(--brand) 9%, transparent) 34px 35px);
+}

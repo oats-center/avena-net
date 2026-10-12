@@ -104,9 +104,9 @@
     inset: -2rem -50vw 0;
     z-index: -1;
     background:
-      radial-gradient(60% 70% at 75% 30%, color-mix(in srgb, var(--avena-green) 18%, transparent), transparent 70%),
-      repeating-linear-gradient(150deg, transparent 0 34px, color-mix(in srgb, var(--avena-green) 8%, transparent) 34px 35px),
-      repeating-linear-gradient(30deg, transparent 0 34px, color-mix(in srgb, var(--avena-green) 8%, transparent) 34px 35px);
+      radial-gradient(60% 70% at 75% 30%, color-mix(in srgb, var(--brand) 18%, transparent), transparent 70%),
+      repeating-linear-gradient(150deg, transparent 0 34px, color-mix(in srgb, var(--brand) 8%, transparent) 34px 35px),
+      repeating-linear-gradient(30deg, transparent 0 34px, color-mix(in srgb, var(--brand) 8%, transparent) 34px 35px);
     mask-image: linear-gradient(to bottom, black 40%, transparent);
   }
 
@@ -116,7 +116,7 @@
     font-size: 0.8rem;
     color: color-mix(in srgb, currentColor 55%, transparent);
   }
-  .kicker span { color: var(--avena-green); font-weight: 600; }
+  .kicker span { color: var(--brand); font-weight: 600; }
 
   h1 {
     margin: 0;
@@ -127,7 +127,7 @@
   }
   h1 em {
     font-style: normal;
-    background: linear-gradient(100deg, var(--avena-green) 10%, var(--avena-gold) 90%);
+    background: linear-gradient(100deg, var(--brand) 10%, var(--warm) 90%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -154,50 +154,50 @@
     border: 1.5px solid color-mix(in srgb, currentColor 22%, transparent);
     transition: transform 0.15s, border-color 0.15s, background 0.15s;
   }
-  .btn:hover { transform: translateY(-1px); border-color: var(--avena-green); }
-  .btn.primary { background: var(--avena-green); border-color: var(--avena-green); color: #fff; }
-  .btn.primary:hover { background: var(--avena-green-deep); }
+  .btn:hover { transform: translateY(-1px); border-color: var(--brand); }
+  .btn.primary { background: var(--brand); border-color: var(--brand); color: #fff; }
+  .btn.primary:hover { background: var(--brand-deep); }
   .btn.ghost { border-color: transparent; }
 
   .console {
     min-width: 0;
     border-radius: 1rem;
-    background: #0d1610;
-    border: 1px solid #253a2c;
+    background: var(--console-bg);
+    border: 1px solid var(--console-line);
     box-shadow: 0 40px 80px -30px rgb(10 30 15 / 0.55);
     overflow: hidden;
   }
-  .tabs { display: flex; background: #142219; border-bottom: 1px solid #253a2c; }
+  .tabs { display: flex; background: var(--console-bar); border-bottom: 1px solid var(--console-line); }
   .tabs button {
     flex: 1;
     padding: 0.65rem 0.5rem;
     background: none;
     border: 0;
     border-bottom: 2px solid transparent;
-    color: #7f9a87;
+    color: var(--console-dim);
     font: 500 0.78rem var(--svp-code-font);
     cursor: pointer;
   }
-  .tabs button.on { color: #e9f3ec; border-bottom-color: var(--avena-gold); background: #0d1610; }
+  .tabs button.on { color: var(--on-ink); border-bottom-color: var(--warm); background: var(--console-bg); }
   pre {
     margin: 0;
     padding: 1.1rem 1.25rem 0.5rem;
     min-height: 15.5rem;
     font: 0.78rem/1.65 var(--svp-code-font);
-    color: #c9dccf;
+    color: var(--console-text);
     background: none;
     overflow-x: auto;
   }
   pre b { color: #fff; font-weight: 600; }
-  .p { color: var(--avena-gold); }
+  .p { color: var(--warm); }
   .lvl { color: #6fb3d0; }
   .ok { color: #6fd08c; }
-  .dim { color: #7f9a87; }
-  .note { color: #e8bd62; }
+  .dim { color: var(--console-dim); }
+  .note { color: var(--warm); }
   .caption {
     margin: 0;
     padding: 0.4rem 1.25rem 0.9rem;
     font-size: 0.75rem;
-    color: #6f8a77;
+    color: var(--console-dim);
   }
 </style>
