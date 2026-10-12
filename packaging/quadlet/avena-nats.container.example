@@ -1,0 +1,14 @@
+[Unit]
+Description=NATS using avena-net network namespace
+
+[Container]
+Image=docker.io/library/nats:latest
+ContainerName=avena-nats
+Network=avena-net.container
+PublishPort=4222:4222/tcp
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target

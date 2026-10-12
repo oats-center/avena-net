@@ -8,7 +8,7 @@ Items deferred to keep v1 implementations simple. Address before production.
 
 **Status:** Deferred
 **Added:** 2024-12-11
-**Component:** avena-overlay / routing
+**Component:** avena-net / routing
 
 **Current State:**
 When Babel is enabled, allowed_ips uses a heuristic:
@@ -50,7 +50,6 @@ Review handshake protocol against design doc Section 5.3 (Tunnel Establishment).
 
 **References:**
 - `plans/layer1-remaining-work.md` Task 2
-- `docs/design.tex` lines 356-461
 
 ---
 
@@ -73,9 +72,6 @@ Profile convergence time under realistic mobility patterns. Consider:
 - Making intervals configurable per deployment
 - Different profiles (agricultural vs V2X)
 
-**References:**
-- `docs/design.tex` OQ-1, OQ-2 (lines 1604-1605)
-
 ---
 
 ## TD-004: Babeld Process Supervision
@@ -85,10 +81,10 @@ Profile convergence time under realistic mobility patterns. Consider:
 **Component:** routing / babeld
 
 **Current State:**
-Plan says avena-overlay should restart babeld if it crashes. Not yet implemented.
+Plan says avena-net should restart babeld if it crashes. Not yet implemented.
 
 **Risk:**
-If babeld dies, routing stops working but avena-overlay continues running. Silent failure.
+If babeld dies, routing stops working but avena-net continues running. Silent failure.
 
 **Proper Solution:**
 - Monitor babeld process in event loop
@@ -104,7 +100,7 @@ If babeld dies, routing stops working but avena-overlay continues running. Silen
 **Component:** routing / babeld / WireGuard
 
 **Current State:**
-Babeld defaults to link-local multicast (`ff02::1:6`) for hellos/updates, but WireGuard does not forward multicast. To bridge this, avena-overlay now:
+Babeld defaults to link-local multicast (`ff02::1:6`) for hellos/updates, but WireGuard does not forward multicast. To bridge this, avena-net now:
 - assigns deterministic link-local addresses on WG interfaces,
 - includes each peer’s link-local `/128` in allowed_ips, and
 - runs a small UDP/6696 multicast relay that forwards local multicast Babel packets to peers’ link-local addresses.
@@ -123,7 +119,6 @@ Validate multi-hop on real namespaces, then delete interim relay/heuristics if n
 
 **References:**
 - `plans/babeld-integration.md`
-- `docs/design.tex` multi-hop routing sections
 
 ---
 
@@ -131,7 +126,7 @@ Validate multi-hop on real namespaces, then delete interim relay/heuristics if n
 
 **Status:** Needs Validation
 **Added:** 2025-12-12
-**Component:** avena-overlay / WireGuard policy
+**Component:** avena-net / WireGuard policy
 
 **Current State:**
 When Babel is enabled, allowed_ips decisions depend on the current peer count. Two concurrent handshakes can briefly observe an empty peer set and both assign `::/0`, reintroducing overlap ambiguity. A best-effort reconciliation pass now runs after each peer insert.
@@ -147,7 +142,7 @@ Centralize allowed_ips policy updates under a single serialized path:
 Add a test that forces overlapping handshakes and asserts no simultaneous `::/0` assignment.
 
 **References:**
-- `avena-overlay/src/bin/avena_overlay.rs`
+- `src/bin/avena_net.rs`
 
 ---
 
@@ -170,7 +165,7 @@ Improve robustness of the testbed:
 - add retry/backoff around `nsenter` when safe.
 
 **References:**
-- `avena-testbed/scenarios/linear_three_hop.toml`
+- `testbed/scenarios/linear_three_hop.toml`
 - `plans/babeld-integration.md`
 
 ---
@@ -179,7 +174,7 @@ Improve robustness of the testbed:
 
 **Status:** Needs Implementation
 **Added:** 2025-12-12
-**Component:** avena-overlay / overlay / routing
+**Component:** avena-net / overlay / routing
 
 **Current State:**
 v1 uses a single WireGuard device per identity and attaches all peers to it. This collapses multiple physical underlay links into one logical interface, so Babel cannot represent "the same peer via WiFi" vs "the same peer via cellular" as distinct links with distinct metrics.
@@ -199,7 +194,6 @@ Implement "one WireGuard interface per physical underlay interface per identity"
 - Add/extend testbed scenarios to exercise dual-link-to-same-peer behavior.
 
 **References:**
-- `../docs/design.tex`
 - `plans/babeld-integration.md`
 
 ---
@@ -221,9 +215,6 @@ Physical telemetry (latency, loss, bandwidth, monetary cost, energy cost, peer e
 - Define a stable mapping from physical telemetry -> Babel interface cost (and any per-neighbor penalties).
 - Update Babel costs dynamically with rate limiting and hysteresis (FRR via `vtysh` or a control socket).
 - Validate with a testbed scenario that presents two parallel underlays with different costs and asserts route selection flips when costs cross.
-
-**References:**
-- `../docs/design.tex`
 
 ---
 

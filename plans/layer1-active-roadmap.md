@@ -2,7 +2,7 @@
 
 ## Scope
 
-Finish and harden Avena Layer 1 behavior against the architecture described in `docs/`.
+Finish and harden Avena Layer 1 behavior.
 
 ## Merged Inputs
 
@@ -58,20 +58,13 @@ This roadmap consolidates previously split planning content from:
    - `mobile_relay` flakiness was reduced by retry/reannounce tuning and allowed-ips reconciliation on duplicate handshakes.
    - Remaining work: tighten assertion-window policy so failures are based on scenario deadlines, not fixed probe budgets.
 
-5. **Documentation synchronization**
-   - Keep `docs/chapters/08-status.tex` aligned with implemented behavior at each milestone.
-
 ## Execution Status (Current Iteration)
 
 - [x] Step 1: M3 `::/0` AllowedIPs implementation + Chapter 2 rationale update.
 - [x] Step 2: Introduce explicit tunnel mode tri-state (`kernel`, `userspace`, `prefer_kernel`).
 - [x] Step 3: Switch tunnel identity input to strict stable underlay identifier (no IP-hint fallback).
 - [x] Step 4: Add dual-underlay/failover + churn scenarios and gates.
-- [x] Step 5: Synchronize `docs/chapters/08-status.tex` and close roadmap deltas.
-
-Step 5 completion notes:
-- `docs/chapters/08-status.tex` updated for M2/M3/tri-state/strict-underlay behavior and dual-underlay validation outcomes.
-- `docs/chapters/02-overlay.tex` updated to document adaptive overlay-prefix route retargeting semantics in single-peer multi-underlay state.
+- [x] Step 5: Synchronize design documentation and close roadmap deltas.
 
 ## Step 4 Detailed Test Plan (Per Test)
 
@@ -112,7 +105,7 @@ Acceptance:
 - Scenario passes and demonstrates two distinct per-underlay tunnel interfaces for the same peer identity.
 
 Implementation notes:
-- Added `avena-testbed/scenarios/dual_underlay_same_peer.toml` with explicit parallel link IDs (`ab-wifi`, `ab-cell`).
+- Added `testbed/scenarios/dual_underlay_same_peer.toml` with explicit parallel link IDs (`ab-wifi`, `ab-cell`).
 - Added new assertion type `TunnelInterfaceCount` to validate per-node `av-*` interface count directly.
 - Baseline scenario now verifies dual tunnel activation (`count = 2` on each node) plus end-to-end ping success.
 
@@ -133,7 +126,7 @@ Acceptance:
 - Both single-link failure phases retain end-to-end ping connectivity.
 
 Implementation notes:
-- Added `avena-testbed/scenarios/dual_underlay_failover.toml` with explicit parallel links and staged disconnect/reconnect events.
+- Added `testbed/scenarios/dual_underlay_failover.toml` with explicit parallel links and staged disconnect/reconnect events.
 - Route lifecycle handling now retargets the overlay-prefix route to active underlay tunnels in the single-peer multi-underlay state, eliminating stale route pinning during failover.
 - Scenario now passes end-to-end.
 
@@ -153,24 +146,23 @@ Acceptance:
 - Scenario passes across repeated cycles with stable connectivity and no persistent stale tunnel state after cleanup.
 
 Implementation notes:
-- Added `avena-testbed/scenarios/dual_underlay_churn_cleanup.toml` with two full disconnect/reconnect cycles.
+- Added `testbed/scenarios/dual_underlay_churn_cleanup.toml` with two full disconnect/reconnect cycles.
 - Scenario asserts `TunnelInterfaceCount` transitions `2 -> 0 -> 2` per cycle plus post-reconnect ping.
 - Dead-peer liveness now requires receive-side traffic or recent handshake signal, allowing stale tunnels to be reclaimed during full-underlay outages.
 - Scenario now passes across repeated teardown/rebuild cycles.
 
 ## Validation Gates
 
-- `cargo test -p avena-overlay -p avena-testbed`
-- `avena-testbed/scenarios/two_node_basic.toml`
-- `avena-testbed/scenarios/linear_three_hop.toml`
-- `avena-testbed/scenarios/star_gateway.toml`
-- `avena-testbed/scenarios/mobile_relay.toml`
-- `avena-testbed/scenarios/dual_underlay_same_peer.toml`
-- `avena-testbed/scenarios/dual_underlay_failover.toml`
-- `avena-testbed/scenarios/dual_underlay_churn_cleanup.toml`
+- `cargo test -p avena-net -p avena-testbed`
+- `testbed/scenarios/two_node_basic.toml`
+- `testbed/scenarios/linear_three_hop.toml`
+- `testbed/scenarios/star_gateway.toml`
+- `testbed/scenarios/mobile_relay.toml`
+- `testbed/scenarios/dual_underlay_same_peer.toml`
+- `testbed/scenarios/dual_underlay_failover.toml`
+- `testbed/scenarios/dual_underlay_churn_cleanup.toml`
 
 ## Ownership of Truth
 
-- Architecture/design intent: `docs/`
 - Implementation/debt tracking: `plans/tech-debt.md`
 - Execution roadmap: this file

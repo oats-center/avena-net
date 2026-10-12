@@ -1,0 +1,421 @@
+//! Full test scenario orchestration.
+//!
+//! Coordinates PKI generation, topology setup, link configuration,
+//! event timeline execution, and teardown.
+
+use crate::events::{EventError, EventExecutor, TestResult};
+use crate::links::LinkManager;
+use crate::metrics::MetricsLogger;
+use crate::ns3_driver::Ns3DriverProcess;
+use crate::pki::TestPki;
+use crate::scenario::{EmulationBackend, Scenario};
+use crate::status::Status;
+use crate::telemetry::new_run_id;
+use crate::telemetry_bus::TelemetryBus;
+use crate::topology::TestTopology;
+use std::path::Path;
+use std::sync::Arc;
+use std::time::{Duration, Instant};
+use thiserror::Error;
+use tokio::sync::Mutex;
+use tokio::task::JoinHandle;
+
+const NODE_STARTUP_TIMEOUT: Duration = Duration::from_secs(10);
+const NODE_STARTUP_POLL_INTERVAL: Duration = Duration::from_millis(100);
+
+#[derive(Error, Debug)]
+pub enum RunnerError {
+    #[error("scenario error: {0}")]
+    Scenario(#[from] crate::scenario::ScenarioError),
+
+    #[error("pki error: {0}")]
+    Pki(#[from] crate::pki::PkiError),
+
+    #[error("topology error: {0}")]
+    Topology(#[from] crate::topology::TopologyError),
+
+    #[error("link error: {0}")]
+    Link(#[from] crate::links::LinkError),
+
+    #[error("event error: {0}")]
+    Event(#[from] EventError),
+
+    #[error("ns3 driver error: {0}")]
+    Ns3Driver(#[from] crate::ns3_driver::Ns3DriverError),
+
+    #[error("telemetry bus error: {0}")]
+    TelemetryBus(#[from] crate::telemetry_bus::TelemetryBusError),
+
+    #[error("io error: {0}")]
+    Io(#[from] std::io::Error),
+
+    #[error("node startup failed: {0}")]
+    NodeStartup(String),
+}
+
+pub struct TestRunner {
+    keep_namespaces: bool,
+}
+
+impl std::fmt::Debug for TestRunner {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("TestRunner")
+            .field("keep_namespaces", &self.keep_namespaces)
+            .finish()
+    }
+}
+
+impl TestRunner {
+    pub fn new() -> Self {
+        Self {
+            keep_namespaces: false,
+        }
+    }
+
+    pub fn keep_namespaces(mut self, keep: bool) -> Self {
+        self.keep_namespaces = keep;
+        self
+    }
+
+    pub async fn run_scenario(
+        &self,
+        scenario_path: &Path,
+        output_path: &Path,
+    ) -> Result<TestResult, RunnerError> {
+        let scenario = Scenario::load(scenario_path)?;
+        self.run(&scenario, output_path).await
+    }
+
+    pub async fn run(
+        &self,
+        scenario: &Scenario,
+        output_path: &Path,
+    ) -> Result<TestResult, RunnerError> {
+        let status = Status::new();
+
+        status.message(&format!("Running scenario: {}", scenario.name));
+
+        let run_id = new_run_id();
+        tracing::info!(run_id = %run_id, "starting testbed run");
+        let telemetry_bus =
+            Arc::new(TelemetryBus::from_config(&run_id, &scenario.emulation.telemetry).await?);
+        if let Err(err) = telemetry_bus.publish_scenario_started(&scenario.name).await {
+            tracing::warn!(error = %err, "failed to publish scenario started telemetry");
+        }
+        if let Err(err) = telemetry_bus.publish_scenario_inventory(scenario).await {
+            tracing::warn!(error = %err, "failed to publish scenario inventory telemetry");
+        }
+
+        tracing::debug!("creating metrics logger at {:?}", output_path);
+        let metrics = Arc::new(MetricsLogger::new(output_path)?);
+        metrics.log_scenario_started(&scenario.name);
+
+        let phase = status.phase("Generating PKI");
+        tracing::debug!("generating PKI");
+        let pki = TestPki::generate(&scenario.nodes)?;
+        phase.done();
+
+        let phase = status.phase("Setting up network topology");
+        tracing::debug!("setting up topology");
+        let mut topology = TestTopology::new();
+        topology.setup(scenario, &pki).await?;
+        phase.done();
+
+        let mut ns3_driver = Ns3DriverProcess::start_if_needed(scenario, pki.temp_dir()).await?;
+        let mut ns3_event_task: Option<JoinHandle<()>> = None;
+        if let Some(driver) = ns3_driver.as_ref() {
+            tracing::info!(
+                config = %driver.config_path.display(),
+                "ns3 driver started and ready"
+            );
+        }
+
+        if backend_streams_ns3_events(scenario.emulation.backend) {
+            if let Some(driver) = ns3_driver.as_mut() {
+                if let Some(mut event_rx) = driver.take_event_receiver() {
+                    let metrics = Arc::clone(&metrics);
+                    let telemetry_bus = Arc::clone(&telemetry_bus);
+                    let run_id = run_id.clone();
+                    let emit_nats = backend_emits_ns3_telemetry(scenario.emulation.backend);
+                    ns3_event_task = Some(tokio::spawn(async move {
+                        while let Some(event) = event_rx.recv().await {
+                            metrics.log_ns3_event_with_run_id(&run_id, event.payload.clone());
+                            if emit_nats {
+                                if let Err(err) =
+                                    telemetry_bus.publish_ns3_payload(&event.payload).await
+                                {
+                                    tracing::warn!(
+                                        error = %err,
+                                        "failed to publish ns3 telemetry event"
+                                    );
+                                }
+                            }
+                        }
+                    }));
+                }
+            }
+        }
+
+        let phase = status.phase(&format!("Starting {} nodes", scenario.nodes.len()));
+        let log_dir = output_path.parent().unwrap_or(std::path::Path::new("."));
+        if let Err(err) = topology.start_nodes(&pki, scenario, log_dir, &run_id).await {
+            shutdown_ns3_driver(&mut ns3_driver, &mut ns3_event_task).await;
+            return Err(err.into());
+        }
+
+        let mut links = LinkManager::new();
+        if backend_uses_netem(scenario.emulation.backend) {
+            links.initialize_from_topology(&topology, &scenario.links, &scenario.bridges);
+            links.apply_initial_state().await?;
+        }
+
+        for node in &scenario.nodes {
+            let config_path = pki.temp_dir().join(format!("{}.toml", node.id));
+            if let Ok(content) = std::fs::read_to_string(&config_path) {
+                tracing::debug!(node = %node.id, config = %content, "generated config");
+            }
+        }
+
+        let mut running_count = 0;
+        let mut not_ready_nodes = Vec::new();
+        for node in &scenario.nodes {
+            if wait_for_node_ready(&mut topology, &node.id, log_dir).await? {
+                if let Some(instance) = topology.node_mut(&node.id) {
+                    metrics.log_node_started(&node.id, &instance.overlay_ip);
+                    running_count += 1;
+                    tracing::info!(
+                        node = %node.id,
+                        overlay_ip = %instance.overlay_ip,
+                        "node running"
+                    );
+                }
+            } else {
+                not_ready_nodes.push(node.id.clone());
+            }
+        }
+        phase.done_with(&format!("{running_count} running"));
+
+        if !not_ready_nodes.is_empty() {
+            shutdown_ns3_driver(&mut ns3_driver, &mut ns3_event_task).await;
+            if !self.keep_namespaces {
+                let phase = status.phase("Cleaning up");
+                topology.teardown().await?;
+                phase.done();
+            }
+            return Err(RunnerError::NodeStartup(format!(
+                "not ready: {}",
+                not_ready_nodes.join(", ")
+            )));
+        }
+
+        let topology = Arc::new(Mutex::new(topology));
+        let links = Arc::new(Mutex::new(links));
+
+        let node_ids: Vec<String> = scenario.nodes.iter().map(|n| n.id.clone()).collect();
+        let executor = EventExecutor::new(
+            Arc::clone(&topology),
+            Arc::clone(&links),
+            Arc::clone(&metrics),
+            Arc::clone(&telemetry_bus),
+            node_ids,
+        );
+
+        let phase = status.phase(&format!(
+            "Running timeline ({}s, {} events, {} assertions)",
+            scenario.duration_secs,
+            scenario.events.len(),
+            scenario.assertions.len()
+        ));
+        let result = executor
+            .run_timeline(
+                &scenario.events,
+                &scenario.assertions,
+                scenario.duration_secs,
+            )
+            .await;
+        phase.done();
+
+        shutdown_ns3_driver(&mut ns3_driver, &mut ns3_event_task).await;
+
+        let mut topo = topology.lock().await;
+
+        if !self.keep_namespaces {
+            let phase = status.phase("Cleaning up");
+            topo.teardown().await?;
+            phase.done();
+        }
+
+        let result = result?;
+
+        if let Err(err) = telemetry_bus
+            .publish_scenario_completed(&scenario.name, result.passed, result.duration_secs)
+            .await
+        {
+            tracing::warn!(error = %err, "failed to publish scenario completed telemetry");
+        }
+
+        metrics.log_scenario_completed(result.passed, result.duration_secs);
+        metrics.flush();
+
+        Ok(result)
+    }
+}
+
+fn backend_uses_netem(backend: EmulationBackend) -> bool {
+    matches!(backend, EmulationBackend::Netem)
+}
+
+fn backend_emits_ns3_telemetry(backend: EmulationBackend) -> bool {
+    matches!(backend, EmulationBackend::Ns3)
+}
+
+fn backend_streams_ns3_events(backend: EmulationBackend) -> bool {
+    matches!(backend, EmulationBackend::Ns3)
+}
+
+async fn shutdown_ns3_driver(
+    ns3_driver: &mut Option<Ns3DriverProcess>,
+    ns3_event_task: &mut Option<JoinHandle<()>>,
+) {
+    if let Some(driver) = ns3_driver.as_mut() {
+        if let Err(err) = driver.shutdown().await {
+            tracing::warn!(error = %err, "failed to shutdown ns3 driver cleanly");
+        }
+    }
+
+    if let Some(task) = ns3_event_task.take() {
+        if let Err(err) = task.await {
+            tracing::warn!(error = %err, "ns3 event forwarding task join failed");
+        }
+    }
+}
+
+async fn wait_for_node_ready(
+    topology: &mut TestTopology,
+    node_id: &str,
+    log_dir: &Path,
+) -> Result<bool, RunnerError> {
+    let log_path = log_dir.join(format!("{}.stdout.log", node_id));
+    let deadline = Instant::now() + NODE_STARTUP_TIMEOUT;
+
+    loop {
+        let process_exited = {
+            let Some(instance) = topology.node_mut(node_id) else {
+                return Ok(false);
+            };
+
+            let Some(proc) = instance.avenad_process.as_mut() else {
+                return Ok(false);
+            };
+
+            match proc.try_wait() {
+                Ok(Some(status)) => {
+                    tracing::error!(
+                        node = %node_id,
+                        status = ?status,
+                        log = %log_path.display(),
+                        "avena-net exited before startup readiness"
+                    );
+                    true
+                }
+                Ok(None) => false,
+                Err(e) => return Err(RunnerError::Io(e)),
+            }
+        };
+
+        let log_contents = std::fs::read_to_string(&log_path).unwrap_or_default();
+        if node_startup_failed(&log_contents) {
+            tracing::error!(
+                node = %node_id,
+                log = %log_path.display(),
+                "avena-net reported startup failure"
+            );
+            return Ok(false);
+        }
+        if node_startup_ready(&log_contents) {
+            return Ok(true);
+        }
+        if process_exited {
+            return Ok(false);
+        }
+
+        if Instant::now() >= deadline {
+            tracing::error!(
+                node = %node_id,
+                log = %log_path.display(),
+                timeout_secs = NODE_STARTUP_TIMEOUT.as_secs(),
+                "timed out waiting for node startup readiness"
+            );
+            return Ok(false);
+        }
+
+        tokio::time::sleep(NODE_STARTUP_POLL_INTERVAL).await;
+    }
+}
+
+fn node_startup_ready(log: &str) -> bool {
+    log.contains("Discovery service initialized")
+        || log.contains("Handshake listener bound")
+        || log.contains("avena-net running. Press Ctrl+C to stop.")
+}
+
+fn node_startup_failed(log: &str) -> bool {
+    log.contains("Failed to initialize avena-net")
+}
+
+impl Default for TestRunner {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::scenario::EmulationBackend;
+
+    #[test]
+    fn test_runner_builder() {
+        let runner = TestRunner::new().keep_namespaces(true);
+        assert!(runner.keep_namespaces);
+    }
+
+    #[test]
+    fn node_startup_ready_detects_success_markers() {
+        let log = "INFO avena_net: Loaded configuration\nINFO avena_net: Discovery service initialized\n";
+        assert!(node_startup_ready(log));
+
+        let log = "INFO avena_net: Handshake listener bound\n";
+        assert!(node_startup_ready(log));
+    }
+
+    #[test]
+    fn node_startup_ready_ignores_early_non_ready_logs() {
+        let log = "INFO avena_net: Loaded configuration\nINFO avena_net: Tunnel backend created\n";
+        assert!(!node_startup_ready(log));
+    }
+
+    #[test]
+    fn node_startup_failed_detects_init_failure_marker() {
+        let log = "ERROR avena_net: Failed to initialize avena-net: tunnel error\n";
+        assert!(node_startup_failed(log));
+    }
+
+    #[test]
+    fn backend_uses_netem_only_for_netem_backend() {
+        assert!(backend_uses_netem(EmulationBackend::Netem));
+        assert!(!backend_uses_netem(EmulationBackend::Ns3));
+    }
+
+    #[test]
+    fn backend_emits_ns3_telemetry_only_for_ns3_backend() {
+        assert!(!backend_emits_ns3_telemetry(EmulationBackend::Netem));
+        assert!(backend_emits_ns3_telemetry(EmulationBackend::Ns3));
+    }
+
+    #[test]
+    fn backend_streams_ns3_events_only_for_ns3_backend() {
+        assert!(!backend_streams_ns3_events(EmulationBackend::Netem));
+        assert!(backend_streams_ns3_events(EmulationBackend::Ns3));
+    }
+}

@@ -28,20 +28,20 @@ jobs:
           tool: cross
 
       - name: Build release binary
-        run: cross build --release --bin avena-overlay --target ${{ matrix.target }} -p avena-overlay
+        run: cross build --release --bin avena-net --target ${{ matrix.target }} -p avena-net
 
       - name: Package release asset
         run: |
           stage_dir="dist/${{ matrix.target }}"
           mkdir -p "$stage_dir"
-          cp "target/${{ matrix.target }}/release/avena-overlay" "$stage_dir/avena-overlay"
-          tar -C "$stage_dir" -czf "avena-overlay-${{ matrix.target }}.tar.gz" "avena-overlay"
+          cp "target/${{ matrix.target }}/release/avena-net" "$stage_dir/avena-net"
+          tar -C "$stage_dir" -czf "avena-net-${{ matrix.target }}.tar.gz" "avena-net"
 
       - name: Upload release artifact
         uses: actions/upload-artifact@v4
         with:
-          name: avena-overlay-${{ matrix.target }}
-          path: avena-overlay-${{ matrix.target }}.tar.gz
+          name: avena-net-${{ matrix.target }}
+          path: avena-net-${{ matrix.target }}.tar.gz
 
   publish:
     needs: build
@@ -59,4 +59,4 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            artifacts/**/avena-overlay-*.tar.gz
+            artifacts/**/avena-net-*.tar.gz

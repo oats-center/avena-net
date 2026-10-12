@@ -1,9 +1,103 @@
+[package]
+name = "avena-net"
+version = "0.2.0"
+edition = "2021"
+description = "Avena network overlay: encrypted, authenticated IPv6 mesh over WireGuard and Babel"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/oats-center/avena-net"
+keywords = ["wireguard", "overlay", "mesh", "vpn", "networking"]
+categories = ["network-programming", "cryptography"]
+
+[[bin]]
+name = "avena-net"
+path = "src/bin/avena_net.rs"
+
+[[bin]]
+name = "avena-keygen"
+path = "src/bin/avena_keygen.rs"
+
+[dependencies]
+# Crypto
+ed25519-dalek = { version = "2", features = [
+  "rand_core",
+  "serde",
+  "zeroize",
+  "pkcs8",
+] }
+x25519-dalek = { version = "2", features = ["static_secrets"] }
+sha2 = "0.10"
+hkdf = "0.12"
+zeroize = { version = "1", features = ["derive"] }
+rand = "0.8"
+
+# Encoding
+base32 = "0.5"
+hex = "0.4"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_with = { version = "3", features = ["base64"] }
+jsonwebtoken = "9"
+base64 = "0.22"
+
+# Networking
+ipnet = "2"
+
+# Discovery
+mdns-sd = "0.11"
+
+# Async
+async-trait = "0.1"
+async-nats = "0.39"
+tokio = { version = "1", features = [
+  "sync",
+  "rt",
+  "rt-multi-thread",
+  "macros",
+  "signal",
+  "net",
+  "time",
+  "fs",
+  "io-util",
+  "process",
+] }
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Config
+toml = "0.8"
+directories = "5"
+
+# Error handling
+thiserror = "1"
+libc = "0.2"
+
+# Data structures
+lru = "0.12"
+
+# Time (for certificate expiry)
+chrono = { version = "0.4", features = ["serde"] }
+
+# Linux kernel netlink (WireGuard)
+[target.'cfg(target_os = "linux")'.dependencies]
+bytes = "1"
+netlink-packet-core = "0.8"
+netlink-packet-generic = "0.4"
+netlink-packet-route = "0.25"
+netlink-packet-wireguard = "0.2"
+netlink-sys = "0.8"
+
+[dev-dependencies]
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "time"] }
+futures = "0.3"
+
+[lints]
+workspace = true
+
 [workspace]
 resolver = "2"
-members = [
-    "avena-overlay",
-    "avena-testbed",
-]
+members = ["testbed"]
 
 [workspace.lints.rust]
 missing_debug_implementations = "warn"
