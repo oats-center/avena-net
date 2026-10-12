@@ -1,6 +1,3 @@
 target/
 tmp/
 three-hop.log
-docs/build/
-docs/.claude/
-docs/main.tex.backup

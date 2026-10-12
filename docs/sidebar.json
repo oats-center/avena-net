@@ -1,0 +1,186 @@
+[
+  {
+    "title": "Start here",
+    "collapsible": false,
+    "items": [
+      {
+        "title": "Overview",
+        "to": "/docs/"
+      },
+      {
+        "title": "avena-net in five minutes",
+        "to": "/docs/getting-started/concepts/"
+      },
+      {
+        "title": "Install",
+        "to": "/docs/getting-started/install/"
+      },
+      {
+        "title": "Quickstart: a mesh on one machine",
+        "to": "/docs/getting-started/quickstart/"
+      },
+      {
+        "title": "Your first mesh on real hosts",
+        "to": "/docs/getting-started/physical-hosts/"
+      }
+    ]
+  },
+  {
+    "title": "Tutorials",
+    "collapsible": false,
+    "items": [
+      {
+        "title": "Watch traffic take two hops",
+        "to": "/docs/tutorials/01-multi-hop/"
+      },
+      {
+        "title": "Survive a link failure",
+        "to": "/docs/tutorials/02-failover/"
+      },
+      {
+        "title": "Connect across subnets",
+        "to": "/docs/tutorials/03-static-peers/"
+      },
+      {
+        "title": "Run as a container sidecar",
+        "to": "/docs/tutorials/04-container-sidecar/"
+      },
+      {
+        "title": "Mix IP and C-V2X",
+        "to": "/docs/tutorials/05-acme/"
+      },
+      {
+        "title": "Stream and watch telemetry",
+        "to": "/docs/tutorials/06-telemetry/"
+      }
+    ]
+  },
+  {
+    "title": "Concepts",
+    "collapsible": true,
+    "items": [
+      {
+        "title": "Architecture overview",
+        "to": "/docs/concepts/architecture/"
+      },
+      {
+        "title": "Identity and addressing",
+        "to": "/docs/concepts/identity/"
+      },
+      {
+        "title": "Trust and certificates",
+        "to": "/docs/concepts/trust/"
+      },
+      {
+        "title": "Discovery",
+        "to": "/docs/concepts/discovery/"
+      },
+      {
+        "title": "Handshake",
+        "to": "/docs/concepts/handshake/"
+      },
+      {
+        "title": "Tunnels",
+        "to": "/docs/concepts/tunnels/"
+      },
+      {
+        "title": "Routing with Babel",
+        "to": "/docs/concepts/routing/"
+      },
+      {
+        "title": "ACME shared medium",
+        "to": "/docs/concepts/acme/"
+      },
+      {
+        "title": "Telemetry",
+        "to": "/docs/concepts/telemetry/"
+      }
+    ]
+  },
+  {
+    "title": "How-to guides",
+    "collapsible": true,
+    "items": [
+      {
+        "title": "Run as a systemd service",
+        "to": "/docs/guides/systemd/"
+      },
+      {
+        "title": "Configure the firewall",
+        "to": "/docs/guides/firewall/"
+      },
+      {
+        "title": "Run in containers",
+        "to": "/docs/guides/containers/"
+      },
+      {
+        "title": "Manage certificates",
+        "to": "/docs/guides/certificates/"
+      },
+      {
+        "title": "Write testbed scenarios",
+        "to": "/docs/guides/scenarios/"
+      },
+      {
+        "title": "Simulate radios with ns-3",
+        "to": "/docs/guides/ns3/"
+      },
+      {
+        "title": "Troubleshooting",
+        "to": "/docs/guides/troubleshooting/"
+      }
+    ]
+  },
+  {
+    "title": "Reference",
+    "collapsible": true,
+    "items": [
+      {
+        "title": "avena-net.toml",
+        "to": "/docs/reference/config/"
+      },
+      {
+        "title": "Command line",
+        "to": "/docs/reference/cli/"
+      },
+      {
+        "title": "Scenario files",
+        "to": "/docs/reference/scenario/"
+      },
+      {
+        "title": "Telemetry subjects",
+        "to": "/docs/reference/telemetry/"
+      },
+      {
+        "title": "Ports and paths",
+        "to": "/docs/reference/ports-and-paths/"
+      },
+      {
+        "title": "Rust library",
+        "to": "/docs/reference/library/"
+      }
+    ]
+  },
+  {
+    "title": "Project",
+    "collapsible": true,
+    "items": [
+      {
+        "title": "Repository layout",
+        "to": "/docs/project/repository/"
+      },
+      {
+        "title": "Development and testing",
+        "to": "/docs/project/development/"
+      },
+      {
+        "title": "Releases",
+        "to": "/docs/project/releases/"
+      },
+      {
+        "title": "Glossary",
+        "to": "/docs/project/glossary/"
+      }
+    ]
+  }
+]

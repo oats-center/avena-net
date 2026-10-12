@@ -15,7 +15,7 @@ testbed/
 ## Running a Scenario
 
 ```bash
-cargo build --bin avena-net --bin avena-testbed
+cargo build --workspace
 target/debug/avena-testbed run testbed/scenarios/two_node_basic.toml
 ```
 

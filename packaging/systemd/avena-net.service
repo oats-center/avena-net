@@ -1,0 +1,19 @@
+[Unit]
+Description=avena-net overlay network
+Documentation=https://oats-center.github.io/avena-net/
+Wants=network-online.target
+After=network-online.target time-sync.target
+
+[Service]
+Type=notify
+ExecStart=/usr/local/bin/avena-net /etc/avena/avena-net.toml
+Environment=RUST_LOG=info
+# avena-net cleans up interfaces and stops babeld on SIGINT.
+KillSignal=SIGINT
+Restart=on-failure
+RestartSec=5
+RuntimeDirectory=avena
+RuntimeDirectoryPreserve=no
+
+[Install]
+WantedBy=multi-user.target

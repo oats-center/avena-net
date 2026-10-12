@@ -3,12 +3,15 @@
 [![GitHub Release](https://img.shields.io/github/v/release/oats-center/avena-net?logo=github)](https://github.com/oats-center/avena-net/releases)
 [![Container Image](https://img.shields.io/badge/ghcr.io-oats--center%2Favena--net-blue?logo=podman)](https://github.com/oats-center/avena-net/pkgs/container/avena-net)
 [![Rust](https://img.shields.io/badge/rust-2021-orange?logo=rust)](https://www.rust-lang.org/)
+[![Docs](https://img.shields.io/badge/docs-oats--center.github.io%2Favena--net-3f8a52)](https://oats-center.github.io/avena-net/)
 
 An encrypted, authenticated IPv6 mesh for devices at the edge.
 
-avena-net gives every device a stable overlay address. The address is derived from the device's Ed25519 identity. The `avena-net` daemon discovers neighbors over mDNS, static endpoints, or a shared C-V2X radio, then authenticates each one against a common root certificate. For every authenticated neighbor it builds a WireGuard tunnel. [Babel](https://www.irif.fr/~jch/software/babel/) routes across those tunnels, so devices with no direct link can still reach each other through intermediate nodes.
+avena-net gives every device a stable overlay address. The address is derived from the device's Ed25519 identity. The `avena-net` daemon discovers neighbors over mDNS, static endpoints, or a shared C-V2X radio, then authenticates each one against a common root certificate. For every authenticated neighbor it builds a WireGuard tunnel. [Babel](https://www.irif.fr/~jch/software/babel/) routes across those tunnels, so devices with no direct link can reach each other through a relay.
 
 It is built for farm equipment, roadside units, and other field devices on unreliable links, but runs on any Linux host with WireGuard and `babeld`.
+
+**Documentation: [oats-center.github.io/avena-net](https://oats-center.github.io/avena-net/)**
 
 ---
 
@@ -51,7 +54,7 @@ It is built for farm equipment, roadside units, and other field devices on unrel
 2. **Discovery**: Peers are found by mDNS on the local network, by statically configured endpoints, or by beacons sent over an ACME/C-V2X shared radio channel. Several methods can run at the same time.
 3. **Handshake**: Neighbors exchange certificates (JWTs signed by a common root) over a TCP control channel. Peers that cannot prove a valid chain are rejected. A successful handshake yields the WireGuard keys for the pair.
 4. **Tunnels**: Each authenticated neighbor gets its own WireGuard interface. avena-net uses the kernel WireGuard module when it can and falls back to `wireguard-go` in userspace when it can't (for example, inside containers).
-5. **Routing**: avena-net runs `babeld` across the per-peer interfaces. Babel learns multi-hop routes and fails over between them when links change.
+5. **Routing**: avena-net runs `babeld` across the per-peer interfaces and keeps direct and overlay-prefix routes in sync. When a peer is reachable over several underlays, traffic fails over between them. See [Routing with Babel](https://oats-center.github.io/avena-net/docs/concepts/routing/) for what's validated today.
 6. **Telemetry**: Peer, handshake, and routing events are published to NATS, if configured, for dashboards and experiments.
 
 ---
@@ -60,15 +63,15 @@ It is built for farm equipment, roadside units, and other field devices on unrel
 
 ### Field and Farm Networks
 
-Tractors, implements, and edge gateways move in and out of radio range all the time. Each machine keeps the same overlay address, and Babel routes through whichever neighbors are in range. That lets services on one machine reach another without tracking changing underlay IPs.
+Tractors, implements, and edge gateways move in and out of radio range all the time. Each machine keeps the same overlay address, and traffic can be relayed through neighbors that are in range. That lets services on one machine reach another without tracking changing underlay IPs.
 
 ### Mixed IP and C-V2X Deployments
 
-A single node can talk to ordinary IP/mDNS neighbors and to ACME/C-V2X radio neighbors (for example, a Cohda MK6) at the same time. Both kinds become normal overlay peers, and Babel routes across both underlays. See [`docs/acme.md`](docs/acme.md).
+A single node can talk to ordinary IP/mDNS neighbors and to ACME/C-V2X radio neighbors (for example, a Cohda MK6) at the same time. Both kinds become normal overlay peers, and Babel routes across both underlays. See [Mix IP and C-V2X](https://oats-center.github.io/avena-net/docs/tutorials/05-acme/).
 
 ### Secure Sidecar for Existing Services
 
-Run avena-net as a container, then attach other containers, such as `nats-server`, to its network namespace. Those services become reachable over the encrypted overlay without changes. See [`docs/container.md`](docs/container.md).
+Run avena-net as a container, then attach other containers, such as `nats-server`, to its network namespace. Those services become reachable over the encrypted overlay without changes. See [Run as a container sidecar](https://oats-center.github.io/avena-net/docs/tutorials/04-container-sidecar/).
 
 ### Network Experiments
 
@@ -129,7 +132,7 @@ podman run --rm \
 
 To pin a version, use a release tag such as `ghcr.io/oats-center/avena-net:vX.Y.Z`.
 
-Inside a container, set `routing.babel.skip_kernel_setup = true` and set the forwarding sysctls on the host. See [`docs/container.md`](docs/container.md).
+Inside a container, set `routing.babel.skip_kernel_setup = true` and set the forwarding sysctls on the host. See [Run in containers](https://oats-center.github.io/avena-net/docs/guides/containers/).
 
 ### Quadlet
 
@@ -151,7 +154,7 @@ The unit sets `Notify=true`, so systemd waits until the daemon reports it is rea
 
 ## Quick Start
 
-This walkthrough brings up a small mesh on hosts that share a LAN, using mDNS discovery. For the full runbook, including troubleshooting, see [`docs/getting-started.md`](docs/getting-started.md).
+This walkthrough brings up a small mesh on hosts that share a LAN, using mDNS discovery. For the full runbook, including troubleshooting, see [Your first mesh on real hosts](https://oats-center.github.io/avena-net/docs/getting-started/physical-hosts/).
 
 ### Create Credentials
 
@@ -253,7 +256,7 @@ ping -6 <overlay_ip from another node's .meta>
 | `[telemetry]` | NATS publishing, run and node IDs used in subjects. |
 | `[acme]` | Optional ACME/C-V2X shared-medium underlay. |
 
-For every field and its default, see [`docs/config.md`](docs/config.md). A complete mixed IP + ACME example is in [`examples/mixed-ip-acme.toml`](examples/mixed-ip-acme.toml).
+For every field and its default, see the [configuration reference](https://oats-center.github.io/avena-net/docs/reference/config/). A complete mixed IP + ACME example is in [`examples/mixed-ip-acme.toml`](examples/mixed-ip-acme.toml).
 
 ---
 
@@ -261,21 +264,22 @@ For every field and its default, see [`docs/config.md`](docs/config.md). A compl
 
 | Port | Protocol | Purpose |
 |------|----------|---------|
-| `51820` (`listen_port`) | UDP | WireGuard data plane |
-| `51821` (`listen_port + 1`) | TCP | Authenticated handshake / control plane |
+| `51821` (`listen_port + 1`) | TCP | Authenticated handshake |
+| `20000–59999` | UDP | Per-peer WireGuard tunnels (each peer gets its own interface and port) |
+| `51820` (`listen_port`) | UDP | Base WireGuard interface, advertised in discovery |
 | `5353` | UDP multicast | mDNS discovery, when enabled |
 
-If you change `listen_port`, open both it and `listen_port + 1`.
+See [Configure the firewall](https://oats-center.github.io/avena-net/docs/guides/firewall/) for why the tunnel range is so wide.
 
 ---
 
 ## Telemetry
 
-When `telemetry.publish_nats = true`, avena-net publishes JSON events to NATS under:
+When `telemetry.publish_nats = true` (the default) and a NATS URL is available, avena-net publishes JSON events to NATS under:
 
 ```text
-avena.v1.<run_id>.node.<node_id>.overlay.<event>          # e.g. peer-connected
-avena.v1.<run_id>.node.<node_id>.routing.babel.<event>    # e.g. neighbors-active
+avena.v1.<run_id>.node.<node_id>.overlay.<event>          # e.g. peer_connected
+avena.v1.<run_id>.node.<node_id>.routing.babel.<topic>    # routes, neighbors
 ```
 
 The NATS server is `telemetry.nats_url` or, if that is unset, the `AVENA_NATS_URL` environment variable. The dashboard in [`testbed/ui/`](testbed/ui/) consumes these subjects.
@@ -307,7 +311,7 @@ Run the tests:
 cargo test --workspace
 ```
 
-Some integration tests need root or `CAP_NET_ADMIN` and are `#[ignore]`d by default. See [`docs/reference.md`](docs/reference.md#testing).
+Some integration tests need root or `CAP_NET_ADMIN` and are `#[ignore]`d by default. See [Development and testing](https://oats-center.github.io/avena-net/docs/project/development/).
 
 ---
 
@@ -317,8 +321,8 @@ Some integration tests need root or `CAP_NET_ADMIN` and are `#[ignore]`d by defa
 src/            avena-net library and binaries (avena-net, avena-keygen)
 tests/          integration tests and helper scripts
 examples/       example configurations
-docs/           user documentation
-packaging/      Containerfile and quadlet units
+docs/           documentation website (Sveltepress, published to GitHub Pages)
+packaging/      Containerfile, Quadlet units, systemd unit
 testbed/        avena-testbed: multi-node scenario harness (+ ns-3 driver, telemetry UI)
 plans/          roadmap, tech debt, and design records
 ```
@@ -327,11 +331,13 @@ plans/          roadmap, tech debt, and design records
 
 ## More Details
 
-- [`docs/getting-started.md`](docs/getting-started.md): step-by-step physical host bring-up and troubleshooting
-- [`docs/config.md`](docs/config.md): full configuration reference
-- [`docs/acme.md`](docs/acme.md): mixed IP + ACME/C-V2X deployments
-- [`docs/container.md`](docs/container.md): container image, quadlets, sidecar networking
-- [`docs/reference.md`](docs/reference.md): architecture, library API, `avena-keygen`, testing
+Everything else is on the [documentation site](https://oats-center.github.io/avena-net/):
+
+- [Quickstart: a mesh on one machine](https://oats-center.github.io/avena-net/docs/getting-started/quickstart/)
+- [Tutorials](https://oats-center.github.io/avena-net/docs/tutorials/01-multi-hop/): relaying, failover, static peers, containers, C-V2X, telemetry
+- [Concepts](https://oats-center.github.io/avena-net/docs/concepts/architecture/): identity, trust, discovery, handshake, tunnels, routing
+- [How-to guides](https://oats-center.github.io/avena-net/docs/guides/systemd/): systemd, firewall, certificates, testbed scenarios, ns-3, troubleshooting
+- [Reference](https://oats-center.github.io/avena-net/docs/reference/config/): configuration, CLI, scenario files, telemetry, ports and paths
 - [`testbed/README.md`](testbed/README.md): running multi-node scenarios
 
 ---

@@ -1,6 +1,9 @@
-# Configuration Reference
+---
+title: "avena-net.toml"
+description: "Every configuration field, its default, and what it does."
+---
 
-`avena-net` reads a single TOML file. Pass its path as the only argument. If you omit it, the daemon uses `/etc/avena/avena-net.toml`.
+`avena-net` reads one TOML file. Pass its path as the only argument. If you omit it, the daemon uses `/etc/avena/avena-net.toml`.
 
 ```bash
 avena-net /etc/avena/avena-net.toml
@@ -8,9 +11,7 @@ avena-net /etc/avena/avena-net.toml
 
 Every field has a default except `trusted_root_cert` and `device_cert`.
 
----
-
-## Top Level
+## Top level
 
 | Field | Default | Description |
 |-------|---------|-------------|
@@ -38,7 +39,7 @@ A node's overlay address is `prefix` plus bits derived from its `DeviceId`. `ave
 | Field | Default | Description |
 |-------|---------|-------------|
 | `enable_mdns` | `true` | Advertise and browse for peers over mDNS. |
-| `mdns_interfaces` | `[]` | Interfaces to run mDNS on. Empty means the system default. |
+| `mdns_interfaces` | `[]` | Interfaces to run mDNS on. Empty means every interface that is up, except `lo`, the overlay interface, and `av-*` tunnels. |
 | `mdns_interface` | none | Deprecated single-interface form of `mdns_interfaces`. |
 | `presence_reannounce_interval_ms` | `1000` | How often to re-announce local presence. |
 | `peer_retry_interval_ms` | `250` | How often to retry connecting to known but unconnected peers. |
@@ -70,7 +71,7 @@ avena-net starts and manages its own `babeld` process.
 | `hello_interval` | `1000` | Hello interval, ms. |
 | `update_interval` | `4000` | Update interval, ms. |
 | `ipv6_subtrees` | auto | Force `babeld`'s `ipv6-subtrees` mode. When unset, it is turned on automatically if `ip -6 rule` is unsupported. |
-| `skip_kernel_setup` | `false` | Don't write sysctls. Set this in containers, where `/proc/sys` is read-only. Missing settings are logged. See [`container.md`](container.md#container-config). |
+| `skip_kernel_setup` | `false` | Don't write sysctls. Set this in containers, where `/proc/sys` is read-only. Missing settings are logged. See [Run in containers](/docs/guides/containers/). |
 
 ## `[telemetry]`
 
@@ -86,7 +87,7 @@ Subjects follow `avena.v1.<run_id>.node.<node_id>.overlay.<event>` and `avena.v1
 
 ## `[acme]`
 
-Optional. When present, the node also uses an ACME/C-V2X shared radio channel as an underlay, in addition to IP. See [`acme.md`](acme.md) for a walkthrough.
+Optional. When present, the node also uses an ACME/C-V2X shared radio channel as an underlay, in addition to IP. See [Tutorial 5](/docs/tutorials/05-acme/) for a walkthrough and [ACME shared medium](/docs/concepts/acme/) for the design.
 
 | Field | Default | Description |
 |-------|---------|-------------|
@@ -103,7 +104,7 @@ Optional. When present, the node also uses an ACME/C-V2X shared radio channel as
 | `startup_delay_ms` | `1000` | Wait after spawning helpers before sending traffic. |
 | `control_timeout_ms` | `10000` | Timeout for ACME handshake request/response exchanges. |
 
-The port defaults above differ from the tuple in [`examples/mixed-ip-acme.toml`](../examples/mixed-ip-acme.toml), which matches the original demo scripts. The values just need to be consistent across your ACME nodes.
+The port defaults above differ from the tuple in `examples/mixed-ip-acme.toml`, which matches the original demo scripts. The values just need to be consistent across your ACME nodes.
 
 ## Environment
 
