@@ -2519,14 +2519,15 @@ async fn main() {
 
     tracing_subscriber::fmt().with_env_filter(filter).init();
 
-    let mut args = std::env::args_os();
+    let mut args = std::env::args_os().peekable();
     let program = args
         .next()
         .and_then(|arg| arg.into_string().ok())
         .unwrap_or_else(|| "avena-net".to_string());
     let default_config_path = PathBuf::from("/etc/avena/avena-net.toml");
 
-    match args.next().as_ref().and_then(|arg| arg.to_str()) {
+    // Peek so a positional config path is still available below.
+    match args.peek().and_then(|arg| arg.to_str()) {
         Some("--help") | Some("-h") => {
             print_usage(&program);
             std::process::exit(0);
