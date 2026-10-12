@@ -35,7 +35,6 @@ enable_mdns = true
 mdns_interfaces = ["eth0"]          # the node's ordinary LAN NIC(s)
 
 [telemetry]
-publish_nats = false
 node_id = "mk6-node-01"             # human name, also sent in ACME beacons
 
 [acme]

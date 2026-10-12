@@ -267,15 +267,6 @@ impl TelemetryPublisher {
             .map(|id| sanitize_subject_token(&id, DEFAULT_TELEMETRY_TOKEN))
             .unwrap_or_else(|| sanitize_subject_token(&fallback_node_id, DEFAULT_TELEMETRY_TOKEN));
 
-        if !config.telemetry.publish_nats {
-            return Self {
-                client: None,
-                run_id,
-                node_id,
-                started_at: Instant::now(),
-            };
-        }
-
         let nats_url = config
             .telemetry
             .nats_url
@@ -284,18 +275,22 @@ impl TelemetryPublisher {
             .filter(|url| !url.is_empty())
             .or_else(|| std::env::var("AVENA_NATS_URL").ok());
 
-        let client = match nats_url {
-            Some(url) => match async_nats::connect(&url).await {
+        // Telemetry is opt-in by URL: no NATS URL means no telemetry, and no warning unless
+        // publish_nats was explicitly set to true.
+        let client = match (config.telemetry.publish_nats, nats_url) {
+            (Some(false), _) => None,
+            (_, Some(url)) => match async_nats::connect(&url).await {
                 Ok(client) => Some(client),
                 Err(err) => {
                     warn!(url = %url, "Failed to connect telemetry NATS: {}", err);
                     None
                 }
             },
-            None => {
+            (Some(true), None) => {
                 warn!("Telemetry enabled but no NATS URL configured");
                 None
             }
+            (None, None) => None,
         };
 
         Self {

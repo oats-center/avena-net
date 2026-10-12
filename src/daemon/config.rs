@@ -189,9 +189,10 @@ impl Default for RoutingConfig {
 /// Telemetry transport configuration.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct TelemetryConfig {
-    #[serde(default = "default_publish_nats")]
-    /// Publish telemetry events to NATS when true.
-    pub publish_nats: bool,
+    #[serde(default)]
+    /// Publish telemetry events to NATS. When unset, telemetry is enabled only if a NATS URL is
+    /// configured; `Some(false)` disables it and `Some(true)` warns if no URL is available.
+    pub publish_nats: Option<bool>,
 
     #[serde(default)]
     /// Optional explicit NATS URL. Falls back to AVENA_NATS_URL when unset.
@@ -213,7 +214,7 @@ pub struct TelemetryConfig {
 impl Default for TelemetryConfig {
     fn default() -> Self {
         Self {
-            publish_nats: default_publish_nats(),
+            publish_nats: None,
             nats_url: None,
             run_id: None,
             node_id: None,
@@ -292,10 +293,6 @@ fn default_keepalive() -> u16 {
 
 fn default_dead_peer_timeout() -> u64 {
     180
-}
-
-fn default_publish_nats() -> bool {
-    true
 }
 
 fn default_babel_snapshot_interval_secs() -> u64 {
@@ -451,7 +448,7 @@ mod tests {
             PathBuf::from("/etc/avena/root.cert")
         );
         assert_eq!(config.device_cert, PathBuf::from("/etc/avena/device.cert"));
-        assert!(config.telemetry.publish_nats);
+        assert!(config.telemetry.publish_nats.is_none());
         assert_eq!(config.telemetry.babel_snapshot_interval_secs, 1);
         assert!(config.acme.is_none());
     }
@@ -469,7 +466,7 @@ mod tests {
     #[test]
     fn telemetry_defaults_are_safe() {
         let telemetry = TelemetryConfig::default();
-        assert!(telemetry.publish_nats);
+        assert!(telemetry.publish_nats.is_none());
         assert!(telemetry.nats_url.is_none());
         assert!(telemetry.run_id.is_none());
         assert!(telemetry.node_id.is_none());
@@ -486,6 +483,20 @@ mod tests {
         let config: OverlayConfig = toml::from_str(toml).unwrap();
         assert_eq!(config.interface_name, "wg-avena");
         assert_eq!(config.listen_port, 51820);
+    }
+
+    #[test]
+    fn publish_nats_distinguishes_unset_from_explicit() {
+        let parse = |telemetry: &str| -> Option<bool> {
+            let toml = format!(
+                "trusted_root_cert = \"/tmp/root.cert\"\ndevice_cert = \"/tmp/device.cert\"\n[telemetry]\n{telemetry}"
+            );
+            let config: OverlayConfig = toml::from_str(&toml).unwrap();
+            config.telemetry.publish_nats
+        };
+        assert_eq!(parse(""), None);
+        assert_eq!(parse("publish_nats = false"), Some(false));
+        assert_eq!(parse("publish_nats = true"), Some(true));
     }
 
     #[test]

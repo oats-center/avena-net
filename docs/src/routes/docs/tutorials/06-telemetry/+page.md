@@ -28,7 +28,6 @@ nats-server -c nats.conf
 
 ```toml
 [telemetry]
-publish_nats = true
 nats_url = "nats://10.0.0.5:4222"
 run_id = "field-trial-1"
 node_id = "tractor-07"
@@ -90,6 +89,6 @@ built-in timeline without any server.
 
 ## What you learned
 
-- Telemetry is on by default but only publishes once a NATS URL is set, and it never blocks the overlay.
+- Telemetry turns on when a NATS URL is set, and it never blocks the overlay.
 - Subjects are `avena.v1.<run_id>.node.<node_id>.<area>.<event>`.
 - The dashboard works live, from JetStream replay, or in demo mode.

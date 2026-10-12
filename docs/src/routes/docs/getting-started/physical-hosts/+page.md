@@ -92,9 +92,6 @@ prefix_len = 48
 [discovery]
 enable_mdns = true
 mdns_interfaces = ["eth0"]
-
-[telemetry]
-publish_nats = false
 ```
 
 ## 5. Start the daemons

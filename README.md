@@ -213,9 +213,9 @@ mdns_interfaces = ["eth0"]
 [routing.babel]
 binary_path = "/usr/sbin/babeld"
 
-[telemetry]
-# Set to true and add nats_url to stream events to NATS.
-publish_nats = false
+# Optional: set a NATS URL to publish telemetry events.
+# [telemetry]
+# nats_url = "nats://10.0.0.5:4222"
 ```
 
 To reach peers on another subnet, or across a WAN where mDNS can't reach, add static peers:
@@ -275,14 +275,14 @@ See [Configure the firewall](https://oats-center.github.io/avena-net/docs/guides
 
 ## Telemetry
 
-When `telemetry.publish_nats = true` (the default) and a NATS URL is available, avena-net publishes JSON events to NATS under:
+Telemetry is optional. When a NATS URL is set, avena-net publishes JSON events to NATS under:
 
 ```text
 avena.v1.<run_id>.node.<node_id>.overlay.<event>          # e.g. peer_connected
 avena.v1.<run_id>.node.<node_id>.routing.babel.<topic>    # routes, neighbors
 ```
 
-The NATS server is `telemetry.nats_url` or, if that is unset, the `AVENA_NATS_URL` environment variable. The dashboard in [`testbed/ui/`](testbed/ui/) consumes these subjects.
+The NATS server is `telemetry.nats_url` or, if that is unset, the `AVENA_NATS_URL` environment variable. Without either, nothing is published and the overlay runs the same. Set `publish_nats = false` to turn telemetry off even when a URL is set. The dashboard in [`testbed/ui/`](testbed/ui/) consumes these subjects.
 
 ---
 

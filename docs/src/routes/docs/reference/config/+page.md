@@ -77,7 +77,7 @@ avena-net starts and manages its own `babeld` process.
 
 | Field | Default | Description |
 |-------|---------|-------------|
-| `publish_nats` | `true` | Publish events to NATS. Set to `false` when you have no NATS server. |
+| `publish_nats` | unset | Unset: publish only if a NATS URL is set. `false`: never publish. `true`: publish, and log a warning if no URL is set. |
 | `nats_url` | none | NATS server URL. If unset, uses the `AVENA_NATS_URL` environment variable. |
 | `run_id` | `$AVENA_RUN_ID`, else `"standalone"` | First token in telemetry subjects. Use it to separate experiment runs. |
 | `node_id` | the node's `DeviceId` | Human-readable node name for subjects and ACME discovery. |

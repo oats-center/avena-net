@@ -669,7 +669,7 @@ impl TestTopology {
             dead_peer_timeout_secs: 30,
             routing: RoutingConfig::default(),
             telemetry: DaemonTelemetryConfig {
-                publish_nats: scenario_telemetry.publish_nats,
+                publish_nats: Some(scenario_telemetry.publish_nats),
                 nats_url: effective_telemetry_nats_url(
                     scenario_telemetry,
                     self.management_nats_url.as_ref(),

@@ -3,16 +3,19 @@ title: "Telemetry"
 ---
 
 avena-net can publish what it's doing to [NATS](https://nats.io) as JSON. Use it for live
-dashboards, for experiment logs, and for correlating events across nodes.
+dashboards, for experiment logs, and for correlating events across nodes. Telemetry is optional:
+without NATS, the overlay works the same.
 
 ## When it publishes
 
 | `publish_nats` | URL available? | Result |
 |---|---|---|
-| `false` | | nothing is published |
-| `true` (default) | `nats_url` or `$AVENA_NATS_URL` | connects at startup and publishes |
+| unset (default) | `nats_url` or `$AVENA_NATS_URL` | connects at startup and publishes |
+| unset (default) | neither | nothing is published, nothing logged |
+| `true` | yes | connects at startup and publishes |
 | `true` | neither | warning logged, nothing published |
-| `true` | yes, but unreachable | warning logged, nothing published |
+| unset or `true` | yes, but unreachable | warning logged, nothing published |
+| `false` | any | nothing is published |
 
 Telemetry never stops the overlay. It connects once, at startup, so a server that comes up
 later isn't picked up until the daemon restarts.

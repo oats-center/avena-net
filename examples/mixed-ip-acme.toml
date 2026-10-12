@@ -24,7 +24,6 @@ hello_interval = 1000
 update_interval = 4000
 
 [telemetry]
-publish_nats = false
 node_id = "mk6-node-01"
 
 [acme]
