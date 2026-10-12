@@ -28,8 +28,8 @@ export default defineConfig({
           dark: '#0e1415',
           primary: '#2a7f86',
           primaryDeep: '#1d5c62',
-          hover: '#d9a441',
-          gradient: { start: '#2a7f86', end: '#d9a441' },
+          hover: '#e07a5f',
+          gradient: { start: '#2a7f86', end: '#e07a5f' },
         },
         highlighter: {
           languages: ['bash', 'sh', 'console', 'toml', 'rust', 'ini', 'dockerfile', 'yaml', 'json', 'diff', 'svelte', 'ts', 'js', 'md', 'css', 'text'],

@@ -1,12 +1,11 @@
 /* ─── avena-net brand ───
- * Signature: deep teal (the network). Warm metal: Avena gold, because avena-net is part of Avena.
- * Motif: crossed lattice (the mesh). See src/lib/family/README.md for the family rules. */
+ * Signature: deep teal (the network). Warm accent: signal coral. Motif: crossed lattice (the mesh). See src/lib/family/README.md for the family rules. */
 
 :root {
   --brand: #2a7f86;
   --brand-deep: #1d5c62;
-  --warm: #d9a441;
-  --warm-ink: #2b1f00;
+  --warm: #e07a5f;
+  --warm-ink: #2a0f07;
   --ink: #142427;
   --on-ink: #eaf4f4;
   --on-ink-muted: #a9c4c5;
