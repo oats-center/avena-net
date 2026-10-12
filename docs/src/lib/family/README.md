@@ -8,7 +8,7 @@ immediately that they're in the same family, *and* which project they're looking
 | Avena | https://oats-center.github.io/avena/ |
 | avena-net | https://oats-center.github.io/avena-net/ |
 | Trellis | https://oats-center.github.io/trellis/ |
-| wattdog | (README only, for now) |
+| wattdog | https://oats-center.github.io/wattdog/ |
 
 ## What's shared (belongs together)
 

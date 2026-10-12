@@ -40,3 +40,6 @@ html.dark body { background-color: var(--paper-dark); }
 
 /* Decorative backgrounds must never cause sideways scrolling */
 .family-page { overflow-x: clip; }
+
+/* Code shows exactly what to type: no `<=` → `≤` ligatures */
+code, pre, kbd { font-variant-ligatures: none; }
