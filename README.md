@@ -3,13 +3,13 @@
 [![GitHub Release](https://img.shields.io/github/v/release/oats-center/avena-net?logo=github)](https://github.com/oats-center/avena-net/releases)
 [![Container Image](https://img.shields.io/badge/ghcr.io-oats--center%2Favena--net-blue?logo=podman)](https://github.com/oats-center/avena-net/pkgs/container/avena-net)
 [![Rust](https://img.shields.io/badge/rust-2021-orange?logo=rust)](https://www.rust-lang.org/)
-[![Docs](https://img.shields.io/badge/docs-oats--center.github.io%2Favena--net-3f8a52)](https://oats-center.github.io/avena-net/)
+[![Docs](https://img.shields.io/badge/docs-oats--center.github.io%2Favena--net-2a7f86)](https://oats-center.github.io/avena-net/)
 
 An encrypted, authenticated IPv6 mesh for devices at the edge.
 
 avena-net gives every device a stable overlay address. The address is derived from the device's Ed25519 identity. The `avena-net` daemon discovers neighbors over mDNS, static endpoints, or a shared C-V2X radio, then authenticates each one against a common root certificate. For every authenticated neighbor it builds a WireGuard tunnel. [Babel](https://www.irif.fr/~jch/software/babel/) routes across those tunnels, so devices with no direct link can reach each other through a relay.
 
-It is built for farm equipment, roadside units, and other field devices on unreliable links, but runs on any Linux host with WireGuard and `babeld`.
+It is built for farm equipment, roadside units, and other field devices on unreliable links, but runs on any Linux host with WireGuard and `babeld`. It doesn't depend on the [Avena](https://oats-center.github.io/avena/) platform or on NATS.
 
 **Documentation: [oats-center.github.io/avena-net](https://oats-center.github.io/avena-net/)**
 
@@ -47,7 +47,7 @@ It is built for farm equipment, roadside units, and other field devices on unrel
  (mDNS / static / ACME)   (TCP, cert-checked)    (per peer)        (multi-hop)
                                                      │
                                                      ▼
-                                              NATS telemetry
+                                     optional NATS telemetry
 ```
 
 1. **Identity**: Each device holds an Ed25519 keypair. Its 16-byte `DeviceId` determines its overlay address within a `/48` ULA prefix, so the address never changes, even when the underlay network does.
@@ -71,7 +71,7 @@ A single node can talk to ordinary IP/mDNS neighbors and to ACME/C-V2X radio nei
 
 ### Secure Sidecar for Existing Services
 
-Run avena-net as a container, then attach other containers, such as `nats-server`, to its network namespace. Those services become reachable over the encrypted overlay without changes. See [Run as a container sidecar](https://oats-center.github.io/avena-net/docs/tutorials/04-container-sidecar/).
+Run avena-net as a container, then attach other containers, such as a web server or `nats-server`, to its network namespace. Those services become reachable over the encrypted overlay without changes. See [Run as a container sidecar](https://oats-center.github.io/avena-net/docs/tutorials/04-container-sidecar/).
 
 ### Network Experiments
 

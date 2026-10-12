@@ -3,9 +3,10 @@ title: "Overview"
 description: "What avena-net is, what it gives you, and where to start."
 ---
 
-avena-net is an encrypted, authenticated IPv6 mesh for devices at the edge. It is the overlay
-network used by [Avena](https://oats-center.github.io/avena/), the OATS edge platform, and it
-also runs on its own on any Linux host.
+avena-net is an encrypted, authenticated IPv6 mesh for devices at the edge. It is a standalone
+daemon that runs on any Linux host with WireGuard and `babeld`. It has no dependency on the
+[Avena](https://oats-center.github.io/avena/) platform, which uses it as one of its network
+providers.
 
 Each device has an Ed25519 keypair. The keypair determines the device's permanent overlay
 address. The `avena-net` daemon discovers nearby devices, checks each one's certificate against a
@@ -26,7 +27,8 @@ between.
   a neighbor. When one of several links to the same peer fails, traffic moves to another.
 - **Multiple underlays.** One node can be reachable over Ethernet, Wi-Fi, and C-V2X
   at the same time, with a separate tunnel on each.
-- **Telemetry.** Peer, handshake, and routing events can be published to NATS.
+- **Optional telemetry.** Peer, handshake, and routing events can be published to NATS. Without a
+  NATS server, the overlay works the same.
 - **Testbed.** Runs avena-net daemons in network namespaces with scripted link failures. It doesn't
   need root.
 

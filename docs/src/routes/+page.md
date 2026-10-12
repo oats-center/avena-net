@@ -143,7 +143,7 @@ Cleaning up... done (0.2s)
 </Tabs>
 </Section>
 
-<Section eyebrow="Use cases" title="Typical deployments" lede="The same daemon and configuration format are used as a host service, a container sidecar, or as part of the Avena platform.">
+<Section eyebrow="Use cases" title="Typical deployments" lede="The same daemon and configuration format are used as a host service or a container sidecar, on any Linux host. The Avena platform runs it as a host service.">
 <UseCases />
 </Section>
 

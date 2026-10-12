@@ -30,8 +30,8 @@
     },
     {
       icon: 'chart-dots-3',
-      title: 'Telemetry',
-      body: 'Peer, handshake, and routing events are published to NATS as JSON.',
+      title: 'Optional telemetry',
+      body: 'Peer, handshake, and routing events can be published to NATS as JSON. The overlay doesn’t need NATS to run.',
       to: '/docs/concepts/telemetry/',
     },
     {

@@ -40,7 +40,7 @@ intermediate nodes.
   mDNS ─────▶│ discovery ─▶ handshake (TCP :51821) ─▶ tunnels (av-…)     │
   static ───▶│                      │                     │              │
   ACME ─────▶│              cert check vs root           babeld ◀──▶ peers│
-             │                                                 telemetry ─┼─▶ NATS
+             │                                                 telemetry ─┼─▶ NATS (optional)
              └────────────────────────────────────────────────────────────┘
 ```
 
