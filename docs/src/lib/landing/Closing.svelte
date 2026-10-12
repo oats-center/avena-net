@@ -5,11 +5,11 @@
 
 <section class="cta">
   <div class="inner">
-    <h2>Run a three-node mesh on your laptop in five minutes.</h2>
-    <p>Build two binaries, run one scenario, and watch traffic hop between nodes. No root, and no spare hardware.</p>
+    <h2>Next steps</h2>
+    <p>The quickstart builds avena-net and the testbed and runs a three-node scenario in network namespaces on one machine. It needs no root and no extra hardware.</p>
     <div class="actions">
-      <a class="btn primary" href={resolve('/docs/getting-started/quickstart/')}>Start the quickstart →</a>
-      <a class="btn" href={resolve('/docs/getting-started/concepts/')}>avena-net in five minutes</a>
+      <a class="btn primary" href={resolve('/docs/getting-started/quickstart/')}>Quickstart →</a>
+      <a class="btn" href={resolve('/docs/getting-started/concepts/')}>Concepts overview</a>
     </div>
   </div>
 </section>

@@ -11,7 +11,7 @@
         ['kv', 'device_id=', 'k2qxkrr25jgc25yxbstxunjyiy'],
         ['kv', 'overlay_ip=', 'fd00:a0e0:a000:56a1:7546:3aea:4c2d:1'],
         ['blank'],
-        ['note', '# Same key, same address. On any network.'],
+        ['note', '# The overlay address is derived from the public key.'],
       ],
     },
     {
@@ -51,11 +51,13 @@
 
   <div class="copy">
     <p class="kicker"><span>Ed25519</span> + <span>WireGuard</span> + <span>Babel</span></p>
-    <h1>A mesh that moves <em>with your machines.</em></h1>
+    <h1>avena-net</h1>
+    <p class="tagline">An encrypted, authenticated IPv6 overlay network for edge devices.</p>
     <p class="lead">
-      avena-net gives every device a permanent, encrypted IPv6 address. Devices find their
-      neighbors on their own, verify each other against your certificate authority, and
-      relay traffic for one another over Ethernet, Wi-Fi, or C-V2X radio.
+      Each device gets an IPv6 address derived from its Ed25519 key. Devices discover neighbors
+      by mDNS, static endpoints, or C-V2X beacons, authenticate them with certificates from your
+      root, and route over per-peer WireGuard tunnels with Babel across Ethernet, Wi-Fi,
+      cellular, or C-V2X.
     </p>
     <div class="actions">
       <a class="btn primary" href={resolve('/docs/getting-started/quickstart/')}>Get started <span aria-hidden="true">→</span></a>
@@ -120,17 +122,18 @@
 
   h1 {
     margin: 0;
-    font-size: clamp(2.6rem, 6vw, 4.4rem);
+    font-size: clamp(2.4rem, 5vw, 3.6rem);
     line-height: 1;
     font-weight: 750;
     letter-spacing: -0.035em;
   }
-  h1 em {
-    font-style: normal;
-    background: linear-gradient(100deg, var(--brand) 10%, var(--warm) 90%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+  .tagline {
+    margin: 0.6rem 0 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.25rem, 2.2vw, 1.6rem);
+    font-weight: 600;
+    line-height: 1.25;
+    color: color-mix(in srgb, currentColor 80%, transparent);
   }
 
   .lead {

@@ -3,9 +3,9 @@
   import { IconifyIcon } from '@sveltepress/theme-default/components'
 
   const cases = [
-    { icon: 'tractor', name: 'Field and farm', to: '/docs/tutorials/01-multi-hop/', body: 'Tractors, implements, and edge gateways drift in and out of range. Addresses never change, and traffic hops through whichever machines are close enough.', tags: ['mDNS', 'multi-hop', 'Wi-Fi'] },
-    { icon: 'road', name: 'Roadside and V2X', to: '/docs/tutorials/05-acme/', body: 'Cohda MK6-class radios join the same mesh as wired cabinets. ACME/C-V2X neighbors and IP neighbors are routed together.', tags: ['C-V2X', 'ACME', 'mixed underlay'] },
-    { icon: 'box', name: 'Secure sidecar', to: '/docs/tutorials/04-container-sidecar/', body: 'Run avena-net as a container and attach services such as NATS to its network namespace. They become reachable over the overlay without changes.', tags: ['Podman', 'Quadlet', 'NATS'] },
+    { icon: 'tractor', name: 'Field and farm', to: '/docs/tutorials/01-multi-hop/', body: 'Tractors, implements, and edge gateways move in and out of range. Addresses stay fixed, and traffic is relayed through nearby machines.', tags: ['mDNS', 'multi-hop', 'Wi-Fi'] },
+    { icon: 'road', name: 'Roadside and V2X', to: '/docs/tutorials/05-acme/', body: 'Cohda MK6-class radios and wired cabinets share one overlay. ACME/C-V2X neighbors and IP neighbors are routed together.', tags: ['C-V2X', 'ACME', 'mixed underlay'] },
+    { icon: 'box', name: 'Secure sidecar', to: '/docs/tutorials/04-container-sidecar/', body: 'Run avena-net as a container and attach services such as NATS to its network namespace. They are then reachable over the overlay without changes to the service.', tags: ['Podman', 'Quadlet', 'NATS'] },
   ]
 </script>
 

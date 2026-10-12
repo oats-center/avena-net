@@ -7,30 +7,28 @@ avena-net is an encrypted, authenticated IPv6 mesh for devices at the edge. It i
 network used by [Avena](https://oats-center.github.io/avena/), the OATS edge platform, and it
 also runs on its own on any Linux host.
 
-> **The key is the address. The certificate is the invitation. Babel finds the way.**
-
 Each device has an Ed25519 keypair. The keypair determines the device's permanent overlay
 address. The `avena-net` daemon discovers nearby devices, checks each one's certificate against a
 root you control, builds a WireGuard tunnel to every peer it accepts, and runs Babel across those
 tunnels. Devices that can't hear each other directly still reach each other through the ones in
 between.
 
-## What avena-net gives you
+## Features
 
-- **Addresses that never change.** An address is derived from the device's identity, not from the
-  network it's on. A tractor keeps the same address on the yard Wi-Fi, a cellular modem, and an
-  ad-hoc link to the combine.
-- **Authentication you own.** Peers must present a certificate chained to *your* root. Without
+- **Stable addresses.** An address is derived from the device's identity, not from the network
+  it's on, so it stays the same on Wi-Fi, a cellular modem, or an ad-hoc link.
+- **Certificate authentication.** Peers must present a certificate chained to your root. Without
   one, a device gets no tunnel, no route, and no traffic.
-- **Discovery without infrastructure.** mDNS finds peers on the local network. Static endpoints
+- **Discovery.** mDNS finds peers on the local network. Static endpoints
   reach peers across a WAN. Beacons find peers on a shared C-V2X radio channel.
-- **Routing across tunnels.** Every peer gets its own WireGuard interface, and avena-net runs
+- **Multi-hop routing.** Every peer gets its own WireGuard interface, and avena-net runs
   [Babel](https://www.irif.fr/~jch/software/babel/) across them, so traffic can be relayed through
   a neighbor. When one of several links to the same peer fails, traffic moves to another.
-- **Several underlays at once.** One node can be reachable over Ethernet, Wi-Fi, and C-V2X
+- **Multiple underlays.** One node can be reachable over Ethernet, Wi-Fi, and C-V2X
   at the same time, with a separate tunnel on each.
 - **Telemetry.** Peer, handshake, and routing events can be published to NATS.
-- **A testbed.** Real daemons, in network namespaces, with scripted link failures, without root.
+- **Testbed.** Runs avena-net daemons in network namespaces with scripted link failures. It doesn't
+  need root.
 
 ## Who this documentation is for
 
